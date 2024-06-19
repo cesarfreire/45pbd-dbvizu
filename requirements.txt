@@ -1,0 +1,9 @@
+Django~=5.0.6
+uvicorn
+django-crispy-forms
+crispy-bootstrap5
+psycopg2-binary
+pygraphviz~=1.13
+ERAlchemy~=1.2.10
+SQLAlchemy~=2.0.30
+sqlalchemy_schemadisplay~=2.0

@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load crispy_forms_filters %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}DBVizu - Home{% endblock %}
+{% block head %}
+    <style>
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.5);
+            z-index: 9999;
+        }
+
+        .loading-text {
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <div class="container text-center mt-4">
+        <form method="POST" action="" onsubmit="return validarFormulario()">
+            {% csrf_token %}
+            <div class="row justify-content-center">
+                <div class="col-8">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Tipo de Banco de Dados
+                        </div>
+                        <div class="row g-3 justify-content-center">
+                            <div class="col-sm-7">
+                                {{ form.db_type|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Dados de Conexão
+                        </div>
+                        <div class="row g-3 mb-3 p-2">
+                            <div class="col-sm-7">
+                                {{ form.db_host|as_crispy_field }}
+                            </div>
+                            <div class="col-sm">
+                                {{ form.db_port|as_crispy_field }}
+                            </div>
+                            <div class="col-sm">
+                                {{ form.db_name|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row mb-3 p-2">
+                            <div class="col">
+                                {{ form.db_user|as_crispy_field }}
+                            </div>
+                            <div class="col">
+                                {{ form.db_password|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            {{ form.use_ssl|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="container text-center mt-5">
+                        {% if message %}
+                            <div id="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                {{ message.text }}
+                            </div>
+                        {% endif %}
+
+                        {% if error_message %}
+                            <div id="errorMessage" class="alert alert-danger alert-dismissible" role="alert">
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                {{ error_message }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary col-5" onclick="testarConexao()">
+                                Testar Conexão
+                            </button>
+                        <button id="submitButton" type="submit" class="btn btn-primary col-5" formaction="{% url 'home' %}">
+                            Gerar Diagrama
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+        <div id="loadingOverlay" class="loading-overlay d-none">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="loading-text">Carregando...</p>
+        </div>
+    </div>
+
+
+
+
+    <script>
+    function validarFormulario() {
+        let dbHost = document.getElementById('id_db_host');
+        let dbPort = document.getElementById('id_db_port');
+        let dbName = document.getElementById('id_db_name');
+        let dbUser = document.getElementById('id_db_user');
+        let dbPassword = document.getElementById('id_db_password');
+
+
+        if (dbHost.value.length === 0 || dbPort.value.length === 0 || dbName.value.length === 0 || dbUser.value.length === 0 || dbPassword.value.length === 0) {
+            alert('Preencha todos os campos!');
+            return false;
+        }
+
+        let submitButton = document.getElementById('submitButton');
+        submitButton.disabled = true;
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.classList.remove('d-none');
+        return true;
+
+    }
+
+    function showLoading() {
+        if (!validarFormulario()) {
+            return;
+        }
+        let submitButton = document.getElementById('submitButton');
+        submitButton.disabled = true;
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.classList.remove('d-none');
+
+    }
+
+    function testarConexao() {
+        let dbHost = document.getElementById('id_db_host').value;
+        let dbPort = document.getElementById('id_db_port').value;
+        let dbName = document.getElementById('id_db_name').value;
+        let dbUser = document.getElementById('id_db_user').value;
+        let dbPassword = document.getElementById('id_db_password').value;
+        let useSSL = document.getElementById('id_use_ssl').checked;
+
+        if (dbHost.length === 0 || dbPort.length === 0 || dbName.length === 0 || dbUser.length === 0 || dbPassword.length === 0) {
+            alert('Preencha todos os campos!');
+            return;
+        }
+
+        fetch("{% url 'test_connection' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({
+                db_host: dbHost,
+                db_port: dbPort,
+                db_name: dbName,
+                db_user: dbUser,
+                db_password: dbPassword,
+                use_ssl: useSSL,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            let alertContainer = document.createElement('div');
+            alertContainer.classList.add('alert', 'alert-dismissible', 'fade', 'show');
+            if (data.success) {
+                alertContainer.classList.add('alert-success');
+                alertContainer.innerText = 'Conexão bem-sucedida!';
+            } else {
+                alertContainer.classList.add('alert-danger');
+                alertContainer.innerText = 'Erro na conexão: ' + data.error;
+            }
+            document.querySelector('.container.text-center.mt-5').prepend(alertContainer);
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            let alertContainer = document.createElement('div');
+            alertContainer.classList.add('alert', 'alert-danger');
+            alertContainer.innerText = 'Erro ao testar a conexão.';
+            document.querySelector('.container.text-center.mt-5').prepend(alertContainer);
+        });
+    }
+
+    </script>
+{% endblock %}
