@@ -8,7 +8,7 @@ Este projeto foi idealizado na disciplina 45PBD - Persistência de Dados no curs
 
 O projeto consiste em uma aplicação que receba dados de conexão de um determinado banco de dados, e faça a engenharia reversa, gerando um diagrama de representação das tabelas e seus atributos, assim como seus relacionamentos (foreign key) e as chaves primárias (primary key).
 
-
+> ⚠️ Compatível apenas com PostgreSQL até o momento.
 
 
 
