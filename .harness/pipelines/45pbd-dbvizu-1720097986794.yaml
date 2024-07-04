@@ -11,47 +11,26 @@ pipeline:
         repoName: 45pbd-dbvizu
   stages:
     - stage:
-        identifier: build
-        name: build
+        name: Build docker image
+        identifier: Build_docker_image
+        description: ""
+        type: CI
         spec:
-          caching:
-            enabled: true
           cloneCodebase: true
-          execution:
-            steps:
-              - step:
-                  identifier: runlinter
-                  name: run linter
-                  spec:
-                    command: |-
-                      pip install flake8
-                      flake8 .
-                  timeout: ""
-                  type: Run
-              - step:
-                  identifier: setupvirtualenvironment
-                  name: setup virtual environment
-                  spec:
-                    command: |-
-                      python3 -m venv .venv
-                      . .venv/bin/activate
-                      python3 -m pip install -r requirements.txt
-                      python3 -m pip install -e .
-                  timeout: ""
-                  type: Run
-              - step:
-                  type: BuildAndPushDockerRegistry
-                  name: BuildAndPushDockerRegistry_2
-                  identifier: BuildAndPushDockerRegistry_2
-                  spec:
-                    connectorRef: account.harnessImage
-                    repo: cesarfreire/dbvizu
-                    tags:
-                      - latest
           platform:
             os: Linux
             arch: Amd64
           runtime:
             type: Docker
             spec: {}
-        type: CI
+          execution:
+            steps:
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: Build and push
+                  identifier: Build_and_push
+                  spec:
+                    connectorRef: account.harnessImage
+                    repo: cesarfreire/dbvizu
+                    tags:
+                      - latest
