@@ -40,16 +40,14 @@ pipeline:
                   timeout: ""
                   type: Run
               - step:
-                  identifier: dockerbuild
-                  name: docker_build
+                  type: BuildAndPushDockerRegistry
+                  name: BuildAndPushDockerRegistry_2
+                  identifier: BuildAndPushDockerRegistry_2
                   spec:
-                    connectorRef: <+input>
+                    connectorRef: account.harnessImage
                     repo: cesarfreire/dbvizu
                     tags:
                       - latest
-                    caching: true
-                  timeout: ""
-                  type: BuildAndPushDockerRegistry
           platform:
             os: Linux
             arch: Amd64
