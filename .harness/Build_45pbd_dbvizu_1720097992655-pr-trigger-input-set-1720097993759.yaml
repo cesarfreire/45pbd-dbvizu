@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_45pbd_dbvizu_1720097992655-pr-trigger-input-set
+  identifier: Build_45pbd_dbvizu_1720097992655prtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_45pbd_dbvizu_1720097992655
+    properties:
+      ci:
+        codebase:
+          build:
+            type: PR
+            spec:
+              number: <+trigger.prNumber>
